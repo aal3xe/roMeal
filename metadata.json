@@ -1,0 +1,6 @@
+{
+  "name": "NutriPlan RON - Planificator Nutriție & Buget",
+  "description": "Aplicație de nutriție personalizată și planificare mese adaptată pieței din România, cu calcul nutrițional, excludere alergeni și listă de cumpărături optimizată în RON.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

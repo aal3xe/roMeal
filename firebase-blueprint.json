@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "entities": {
+    "UserProfile": {
+      "collection": "users",
+      "fields": {
+        "email": { "type": "string" },
+        "fullName": { "type": "string" },
+        "calorieTarget": { "type": "number" },
+        "weeklyBudgetRon": { "type": "number" },
+        "preferredStore": { "type": "string" },
+        "householdSize": { "type": "number" },
+        "allergens": { "type": "array", "items": { "type": "string" } },
+        "dietType": { "type": "string" },
+        "updatedAt": { "type": "timestamp" }
+      }
+    },
+    "MealPlan": {
+      "collection": "users/{userId}/meal_plans",
+      "fields": {
+        "weekStartDate": { "type": "string" },
+        "days": { "type": "array" },
+        "updatedAt": { "type": "timestamp" }
+      }
+    },
+    "ShoppingList": {
+      "collection": "users/{userId}/shopping_lists",
+      "fields": {
+        "items": { "type": "array" },
+        "checkedIds": { "type": "array", "items": { "type": "string" } },
+        "updatedAt": { "type": "timestamp" }
+      }
+    }
+  }
+}
