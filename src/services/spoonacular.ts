@@ -197,18 +197,21 @@ export class SpoonacularService {
     } else if (item.instructions) {
       instructions.push(item.instructions.replace(/<[^>]*>?/gm, ''));
     } else {
-      instructions.push('Gătește ingredientele conform preferințelor tale culinare.');
+      instructions.push('Prepare and cook ingredients according to standard culinary directions.');
     }
 
     const totalWeight = Math.max(200, ingredients.reduce((sum, ing) => sum + ing.amount_grams, 0));
     const factor = totalWeight > 0 ? 100 / totalWeight : 1;
+
+    const cleanSummary = (item.summary || '').replace(/<[^>]*>?/gm, '').slice(0, 180) + '...';
 
     return {
       id: `rec-spoon-${item.id}`,
       spoonacular_id: item.id,
       title_ro: item.title,
       title_en: item.title,
-      description_ro: (item.summary || '').replace(/<[^>]*>?/gm, '').slice(0, 180) + '...',
+      description_ro: cleanSummary,
+      description_en: cleanSummary,
       image_url: item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
       prep_time_minutes: item.preparationMinutes || 15,
       cook_time_minutes: item.readyInMinutes || 25,
@@ -228,6 +231,7 @@ export class SpoonacularService {
       equipment_needed: ['aragaz_plita'],
       ingredients,
       instructions_ro: instructions,
+      instructions_en: instructions,
       source_name: 'Spoonacular API'
     };
   }

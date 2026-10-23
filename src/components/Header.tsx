@@ -42,12 +42,12 @@ export const Header: React.FC<HeaderProps> = ({
             <button 
               onClick={() => onSelectTab('planner')}
               className="flex items-center gap-2.5 text-left group focus:outline-hidden"
-              aria-label="roMeal - Pagina Principală"
+              aria-label="roMeal - Home"
             >
               <div className="w-10 h-10 rounded-xl overflow-hidden border border-amber-500/40 shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform shrink-0 bg-slate-900 flex items-center justify-center">
                 <img 
                   src="/src/assets/images/romeal_logo_1790593298182.jpg" 
-                  alt="roMeal Gogoșar Logo" 
+                  alt="roMeal Gourmet Logo" 
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
                 />
@@ -58,11 +58,11 @@ export const Header: React.FC<HeaderProps> = ({
                     <span className="text-amber-400">ro</span>Meal
                   </span>
                   <span className="bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-[10px] font-black px-1.5 py-0.5 rounded-md tracking-wider">
-                    RO
+                    PRO
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400 hidden xl:block tracking-wide mt-0.5">
-                  Nutriție Concierge & Planificare Mese
+                  Smart Meal Planner & Nutrition Concierge
                 </p>
               </div>
             </button>
@@ -71,9 +71,9 @@ export const Header: React.FC<HeaderProps> = ({
             {currentProfile && (
               <div className="hidden 2xl:flex items-center gap-2 ml-2 px-3 py-1.5 bg-slate-900/90 rounded-xl text-xs font-medium text-slate-300 border border-amber-500/25 h-10">
                 <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Magazin: <strong className="text-white">{currentProfile.preferred_store || 'Kaufland'}</strong></span>
+                <span>Store: <strong className="text-white">{currentProfile.preferred_store || 'Whole Foods / Market'}</strong></span>
                 <span className="text-slate-600">•</span>
-                <span>Buget: <strong className="text-amber-400">{currentProfile.weekly_budget_ron} RON</strong>/săpt</span>
+                <span>Budget: <strong className="text-amber-400">{currentProfile.weekly_budget_ron} RON / $</strong>/wk</span>
               </div>
             )}
           </div>
@@ -89,7 +89,7 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               <CalendarDays className="w-4 h-4 shrink-0" />
-              <span>Mese</span>
+              <span>Meals</span>
             </button>
 
             <button
@@ -101,7 +101,7 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               <ShoppingCart className="w-4 h-4 shrink-0" />
-              <span>Cumpărături</span>
+              <span>Groceries</span>
             </button>
 
             <button
@@ -113,7 +113,7 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               <BookOpen className="w-4 h-4 shrink-0" />
-              <span>Rețete & Gramaje</span>
+              <span>Recipes & Weights</span>
             </button>
 
             <button
@@ -125,7 +125,7 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               <UserIcon className="w-4 h-4 shrink-0" />
-              <span>Profil</span>
+              <span>Profile</span>
             </button>
 
             <button
@@ -135,7 +135,7 @@ export const Header: React.FC<HeaderProps> = ({
                   ? 'bg-slate-800 text-amber-300 border border-amber-500/30 shadow-xs'
                   : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/40'
               }`}
-              title="Schema bazei de date PostgreSQL"
+              title="PostgreSQL Database Schema Viewer"
             >
               <Database className="w-3.5 h-3.5 shrink-0" />
               <span className="hidden lg:inline">DB Schema</span>
@@ -147,17 +147,17 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={onOpenOnboarding}
               className="h-10 flex items-center justify-center gap-2 px-3.5 sm:px-4 rounded-xl border border-amber-400/40 bg-gradient-to-r from-amber-500/15 to-emerald-500/15 text-amber-300 text-xs font-extrabold hover:from-amber-500/25 hover:to-emerald-500/25 transition-all shadow-sm shadow-amber-500/10 shrink-0"
-              title="Chestionar de profilare nutrițională și stil de viață"
+              title="Nutritional Profiling & Lifestyle Wizard"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span className="hidden sm:inline">Chestionar Profilare</span>
-              <span className="sm:hidden">Chestionar</span>
+              <span className="hidden sm:inline">Nutrition Wizard</span>
+              <span className="sm:hidden">Wizard</span>
             </button>
 
             <button
               onClick={onOpenSettings}
               className="h-10 w-10 flex items-center justify-center text-slate-400 hover:text-amber-400 hover:bg-slate-800/60 rounded-xl transition-colors border border-white/5 shrink-0"
-              title="Setări API Spoonacular & Date"
+              title="Spoonacular API & App Settings"
             >
               <Settings className="w-4 h-4" />
             </button>
@@ -169,12 +169,12 @@ export const Header: React.FC<HeaderProps> = ({
                   className="cursor-pointer flex flex-col justify-center text-xs text-right hidden sm:flex h-10 px-2 rounded-xl hover:bg-slate-800/40 transition-colors"
                 >
                   <p className="font-bold text-white leading-tight truncate max-w-[120px]">{currentUser.name}</p>
-                  <p className="text-amber-400 font-semibold text-[11px] leading-tight">{currentProfile?.calorie_target || 2000} kcal/zi</p>
+                  <p className="text-amber-400 font-semibold text-[11px] leading-tight">{currentProfile?.calorie_target || 2000} kcal/day</p>
                 </button>
                 <button
                   onClick={onLogout}
                   className="h-10 w-10 flex items-center justify-center text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-xl transition-colors border border-white/5 shrink-0"
-                  title="Deconectare"
+                  title="Sign Out"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -184,7 +184,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={onOpenAuth}
                 className="h-10 flex items-center justify-center px-4 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 rounded-xl text-xs font-black shadow-md shadow-amber-500/20 transition-all shrink-0"
               >
-                Autentificare
+                Sign In
               </button>
             )}
           </div>
@@ -200,7 +200,7 @@ export const Header: React.FC<HeaderProps> = ({
           }`}
         >
           <CalendarDays className="w-5 h-5" />
-          <span>Mese</span>
+          <span>Meals</span>
         </button>
 
         <button
@@ -210,7 +210,7 @@ export const Header: React.FC<HeaderProps> = ({
           }`}
         >
           <ShoppingCart className="w-5 h-5" />
-          <span>Cumpărături</span>
+          <span>Groceries</span>
         </button>
 
         <button
@@ -220,7 +220,7 @@ export const Header: React.FC<HeaderProps> = ({
           }`}
         >
           <BookOpen className="w-5 h-5" />
-          <span>Rețete</span>
+          <span>Recipes</span>
         </button>
 
         <button
@@ -230,7 +230,7 @@ export const Header: React.FC<HeaderProps> = ({
           }`}
         >
           <UserIcon className="w-5 h-5" />
-          <span>Profil</span>
+          <span>Profile</span>
         </button>
 
         <button

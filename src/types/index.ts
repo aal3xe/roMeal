@@ -120,12 +120,14 @@ export interface Recipe {
   equipment_needed: KitchenEquipment[];
   ingredients: RecipeIngredient[];
   instructions_ro: string[];
+  instructions_en?: string[];
+  description_en?: string;
   source_name?: string;
 }
 
 export interface MealPlanEntry {
   id: string;
-  day_of_week: number; // 0 = Luni, 6 = Duminică
+  day_of_week: number; // 0 = Monday, 6 = Sunday
   meal_slot: MealType;
   recipe_id: string;
   recipe: Recipe;
@@ -136,6 +138,7 @@ export interface MealPlanEntry {
 export interface DayPlan {
   day_index: number;
   day_name_ro: string;
+  day_name_en?: string;
   date_label: string;
   entries: MealPlanEntry[];
   total_calories: number;
@@ -155,6 +158,7 @@ export interface WeeklyMealPlan {
 export interface AggregatedShoppingItem {
   ingredient_id: string;
   name_ro: string;
+  name_en?: string;
   category: Ingredient['category'];
   total_grams: number;
   display_amount: string;

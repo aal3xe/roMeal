@@ -59,20 +59,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       });
 
       if (result.source === 'live_api') {
-        setTestResult(`Succes! S-au sincronizat ${result.recipes.length} rețete direct din Spoonacular API.`);
+        setTestResult(`Success! Synced ${result.recipes.length} recipes directly from Spoonacular API.`);
         onRefreshData();
       } else {
-        setTestResult(`Catalog local activ (${result.recipes.length} rețete adaptate pieței din România disponibile). Dacă adaugi o cheie Spoonacular validă, vor fi descărcate rețete noi.`);
+        setTestResult(`Local catalog active (${result.recipes.length} calibrated recipes available). Add a valid Spoonacular API key to fetch and sync fresh international recipes.`);
       }
     } catch (err: any) {
-      setTestResult(`Eroare: ${err.message || 'Verifică conexiunea sau cheia API.'}`);
+      setTestResult(`Error: ${err.message || 'Check network connection or API key validity.'}`);
     } finally {
       setIsTesting(false);
     }
   };
 
   const handleResetDefaults = () => {
-    if (confirm('Sigur dorești să resetezi rețetele și planul la valorile inițiale?')) {
+    if (confirm('Are you sure you want to reset recipes and meal plans to factory defaults?')) {
       db.resetToDefaults();
       onRefreshData();
       onClose();
@@ -102,13 +102,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <Key className="w-4 h-4 text-amber-400" />
             </div>
             <h2 className="text-sm sm:text-base font-black font-heading text-white">
-              Configurare API Spoonacular & Date
+              Spoonacular API & Data Settings
             </h2>
           </div>
           <button 
             onClick={onClose}
             className="text-slate-400 hover:text-white p-2 rounded-full hover:bg-white/10 active:scale-95 transition-all"
-            aria-label="Închide"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
@@ -118,14 +118,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <div className="p-5 sm:p-6 overflow-y-auto overscroll-contain scrollbar-none flex-1 space-y-5">
           <div>
             <label className="block text-xs font-bold text-slate-300 mb-1.5">
-              Cheie API Spoonacular (Opțional)
+              Spoonacular API Key (Optional)
             </label>
             <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 value={apiKey}
                 onChange={e => setApiKey(e.target.value)}
-                placeholder="Ex: 8b2f1e4... (lasă gol pentru catalogul românesc)"
+                placeholder="e.g., 8b2f1e4... (leave blank to use built-in catalog)"
                 className="flex-1 h-11 px-3.5 text-xs bg-[#141b27] border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-400 font-mono transition-all"
               />
               <button
@@ -133,11 +133,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 onClick={handleSave}
                 className="h-11 px-5 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 active:scale-[0.98] text-slate-950 rounded-xl text-xs font-black transition-all shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 shrink-0"
               >
-                {isSaved ? <Check className="w-4 h-4 text-slate-950" /> : 'Salvează'}
+                {isSaved ? <Check className="w-4 h-4 text-slate-950" /> : 'Save'}
               </button>
             </div>
             <p className="text-[11px] text-slate-400 mt-1.5">
-              Aplicația include deja un catalog românesc bogat calibrat pe grame la cântar și în farfurie. Dacă adaugi o cheie Spoonacular (free tier), rețetele noi vor fi preluate în timp real.
+              roMeal includes a rich built-in catalog calibrated for raw scale vs cooked plate weights. Adding a free Spoonacular API key enables live imports of global recipes.
             </p>
           </div>
 
@@ -149,7 +149,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               className="w-full h-11 flex items-center justify-center gap-2 px-4 bg-[#141b27] hover:bg-slate-800 active:scale-[0.98] text-slate-200 border border-white/10 text-xs font-bold rounded-xl transition-all disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 text-amber-400 ${isTesting ? 'animate-spin' : ''}`} />
-              <span>{isTesting ? 'Se testează...' : 'Testează conexiunea API & Sincronizează'}</span>
+              <span>{isTesting ? 'Testing connection...' : 'Test API Connection & Sync'}</span>
             </button>
           </div>
 
@@ -161,8 +161,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-bold text-white">Resetare date locale</p>
-              <p className="text-[11px] text-slate-400">Reinițializează rețetele și meniurile</p>
+              <p className="text-xs font-bold text-white">Reset Local Data</p>
+              <p className="text-[11px] text-slate-400">Reinitialize default recipes and weekly meal plans</p>
             </div>
             <button
               type="button"
@@ -170,7 +170,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               className="h-10 px-4 self-start sm:self-auto flex items-center justify-center gap-1.5 text-xs text-rose-400 hover:text-rose-300 font-bold rounded-xl hover:bg-rose-950/40 border border-rose-500/20 active:scale-[0.98] transition-all"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Resetează</span>
+              <span>Reset</span>
             </button>
           </div>
         </div>

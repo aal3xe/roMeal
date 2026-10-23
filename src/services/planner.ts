@@ -1,14 +1,14 @@
 import { UserProfile, Recipe, MealType, WeeklyMealPlan, DayPlan, MealPlanEntry, Allergen, DietPreference } from '../types';
 import { db } from './db';
 
-const DAYS_NAMES_RO = [
-  'Luni',
-  'Marți',
-  'Miercuri',
-  'Joi',
-  'Vineri',
-  'Sâmbătă',
-  'Duminică'
+const DAYS_NAMES_EN = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday'
 ];
 
 interface SlotConfig {
@@ -21,30 +21,30 @@ export function getSlotDistribution(mealsPerDay: 2 | 3 | 4 | 5): SlotConfig[] {
   switch (mealsPerDay) {
     case 2:
       return [
-        { type: 'lunch', label_ro: 'Prânz', calorieRatio: 0.52 },
-        { type: 'dinner', label_ro: 'Cină', calorieRatio: 0.48 }
+        { type: 'lunch', label_ro: 'Lunch', calorieRatio: 0.52 },
+        { type: 'dinner', label_ro: 'Dinner', calorieRatio: 0.48 }
       ];
     case 3:
       return [
-        { type: 'breakfast', label_ro: 'Mic Dejun', calorieRatio: 0.28 },
-        { type: 'lunch', label_ro: 'Prânz', calorieRatio: 0.42 },
-        { type: 'dinner', label_ro: 'Cină', calorieRatio: 0.30 }
+        { type: 'breakfast', label_ro: 'Breakfast', calorieRatio: 0.28 },
+        { type: 'lunch', label_ro: 'Lunch', calorieRatio: 0.42 },
+        { type: 'dinner', label_ro: 'Dinner', calorieRatio: 0.30 }
       ];
     case 4:
       return [
-        { type: 'breakfast', label_ro: 'Mic Dejun', calorieRatio: 0.25 },
-        { type: 'lunch', label_ro: 'Prânz', calorieRatio: 0.38 },
-        { type: 'snack', label_ro: 'Gustare', calorieRatio: 0.12 },
-        { type: 'dinner', label_ro: 'Cină', calorieRatio: 0.25 }
+        { type: 'breakfast', label_ro: 'Breakfast', calorieRatio: 0.25 },
+        { type: 'lunch', label_ro: 'Lunch', calorieRatio: 0.38 },
+        { type: 'snack', label_ro: 'Snack', calorieRatio: 0.12 },
+        { type: 'dinner', label_ro: 'Dinner', calorieRatio: 0.25 }
       ];
     case 5:
     default:
       return [
-        { type: 'breakfast', label_ro: 'Mic Dejun', calorieRatio: 0.22 },
-        { type: 'snack', label_ro: 'Gustare 1', calorieRatio: 0.10 },
-        { type: 'lunch', label_ro: 'Prânz', calorieRatio: 0.36 },
-        { type: 'snack', label_ro: 'Gustare 2', calorieRatio: 0.10 },
-        { type: 'dinner', label_ro: 'Cină', calorieRatio: 0.22 }
+        { type: 'breakfast', label_ro: 'Breakfast', calorieRatio: 0.22 },
+        { type: 'snack', label_ro: 'Morning Snack', calorieRatio: 0.10 },
+        { type: 'lunch', label_ro: 'Lunch', calorieRatio: 0.36 },
+        { type: 'snack', label_ro: 'Afternoon Snack', calorieRatio: 0.10 },
+        { type: 'dinner', label_ro: 'Dinner', calorieRatio: 0.22 }
       ];
   }
 }
@@ -64,7 +64,7 @@ export class MealPlanGenerator {
     });
 
     if (safeRecipes.length === 0) {
-      throw new Error('Nu există suficiente rețete disponibile care să respecte toate restricțiile tale de alergeni.');
+      throw new Error('Not enough recipes available that match all your allergen restrictions.');
     }
 
     const slotConfigs = getSlotDistribution(profile.meals_per_day);
@@ -81,7 +81,7 @@ export class MealPlanGenerator {
     for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
       const dayDate = new Date(monday);
       dayDate.setDate(monday.getDate() + dayIndex);
-      const dateLabel = dayDate.toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' });
+      const dateLabel = dayDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
       const dayEntries: MealPlanEntry[] = [];
       let dayCalories = 0;
@@ -125,7 +125,8 @@ export class MealPlanGenerator {
 
       days.push({
         day_index: dayIndex,
-        day_name_ro: DAYS_NAMES_RO[dayIndex],
+        day_name_ro: DAYS_NAMES_EN[dayIndex],
+        day_name_en: DAYS_NAMES_EN[dayIndex],
         date_label: dateLabel,
         entries: dayEntries,
         total_calories: Math.round(dayCalories),
@@ -308,7 +309,7 @@ export class MealPlanGenerator {
     for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
       const dayDate = new Date(monday);
       dayDate.setDate(monday.getDate() + dayIndex);
-      const dateLabel = dayDate.toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' });
+      const dateLabel = dayDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
       const dayEntries: MealPlanEntry[] = [];
       let dayCalories = 0;
@@ -342,7 +343,8 @@ export class MealPlanGenerator {
 
       days.push({
         day_index: dayIndex,
-        day_name_ro: DAYS_NAMES_RO[dayIndex],
+        day_name_ro: DAYS_NAMES_EN[dayIndex],
+        day_name_en: DAYS_NAMES_EN[dayIndex],
         date_label: dateLabel,
         entries: dayEntries,
         total_calories: Math.round(dayCalories),

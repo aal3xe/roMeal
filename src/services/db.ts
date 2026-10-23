@@ -2,21 +2,21 @@ import { User, UserProfile, Recipe, Ingredient, WeeklyMealPlan, Allergen, DietPr
 import { INITIAL_INGREDIENTS, INITIAL_RECIPES } from '../data/seedData';
 
 const STORAGE_KEYS = {
-  USERS: 'nutriplan_users_v1',
-  PROFILES: 'nutriplan_profiles_v1',
-  RECIPES: 'nutriplan_recipes_v1',
-  INGREDIENTS: 'nutriplan_ingredients_v1',
-  MEAL_PLANS: 'nutriplan_meal_plans_v1',
-  CURRENT_USER_ID: 'nutriplan_current_user_id_v1',
+  USERS: 'nutriplan_users_v2',
+  PROFILES: 'nutriplan_profiles_v2',
+  RECIPES: 'nutriplan_recipes_v2',
+  INGREDIENTS: 'nutriplan_ingredients_v2',
+  MEAL_PLANS: 'nutriplan_meal_plans_v2',
+  CURRENT_USER_ID: 'nutriplan_current_user_id_v2',
   SPOONACULAR_KEY: 'nutriplan_spoonacular_api_key',
-  HAS_COMPLETED_PROFILING: 'nutriplan_has_completed_profiling_v1'
+  HAS_COMPLETED_PROFILING: 'nutriplan_has_completed_profiling_v2'
 };
 
 // Seed default demo user and profile
 const DEFAULT_USER: User = {
   id: 'usr-demo-1',
-  email: 'alex3.adrian@gmail.com',
-  name: 'Alex Adrian',
+  email: 'guest@romeal.app',
+  name: 'Guest User',
   created_at: new Date().toISOString()
 };
 
@@ -39,8 +39,8 @@ const DEFAULT_PROFILE: UserProfile = {
   preferences: ['bogata_in_proteine'],
   cooking_time_max_minutes: 35,
   kitchen_equipment: ['aragaz_plita', 'cuptor', 'airfryer'],
-  preferred_store: 'Kaufland',
-  weekly_budget_ron: 380,
+  preferred_store: 'Whole Foods Market',
+  weekly_budget_ron: 120,
   gdpr_consent: true,
   gdpr_consent_date: new Date().toISOString(),
   created_at: new Date().toISOString(),
@@ -61,6 +61,19 @@ class DatabaseService {
 
   private initDatabase() {
     try {
+      // Purge legacy Romanian v1 keys so old Romanian cache does not persist in the user's browser
+      [
+        'nutriplan_users_v1', 
+        'nutriplan_profiles_v1', 
+        'nutriplan_recipes_v1', 
+        'nutriplan_ingredients_v1', 
+        'nutriplan_meal_plans_v1', 
+        'nutriplan_current_user_id_v1', 
+        'nutriplan_has_completed_profiling_v1'
+      ].forEach(k => {
+        try { localStorage.removeItem(k); } catch {}
+      });
+
       // Users
       const storedUsers = localStorage.getItem(STORAGE_KEYS.USERS);
       if (storedUsers) {
@@ -141,73 +154,21 @@ class DatabaseService {
     return this.profiles.find(p => p.user_id === this.currentUserId) || null;
   }
 
-  setCurrentUser(userId: string) {
-    this.currentUserId = userId;
-    localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, userId);
-  }
-
-  signUp(email: string, name: string, passwordHashMock: string): { user: User; profile: UserProfile } {
-    const existing = this.users.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (existing) {
-      throw new Error('Un cont cu această adresă de email există deja.');
-    }
-
-    const newUser: User = {
-      id: `usr-${Date.now()}`,
-      email: email.trim(),
-      name: name.trim() || email.split('@')[0],
-      created_at: new Date().toISOString()
-    };
-
-    const newProfile: UserProfile = {
-      id: `prof-${Date.now()}`,
-      user_id: newUser.id,
-      age: 30,
-      weight_kg: 70,
-      height_cm: 175,
-      gender: 'm',
-      activity_level: 'moderate',
-      goal: 'maintain',
-      calorie_target: 2000,
-      protein_target_g: 120,
-      carbs_target_g: 220,
-      fat_target_g: 65,
-      meals_per_day: 3,
-      household_size: 1,
-      allergies: [],
-      preferences: [],
-      cooking_time_max_minutes: 30,
-      kitchen_equipment: ['aragaz_plita', 'cuptor'],
-      preferred_store: 'Kaufland',
-      weekly_budget_ron: 300,
-      gdpr_consent: true,
-      gdpr_consent_date: new Date().toISOString(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-
-    this.users.push(newUser);
-    this.profiles.push(newProfile);
-    this.currentUserId = newUser.id;
-
-    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(this.users));
-    localStorage.setItem(STORAGE_KEYS.PROFILES, JSON.stringify(this.profiles));
-    localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, newUser.id);
-
-    return { user: newUser, profile: newProfile };
-  }
-
   login(email: string): { user: User; profile: UserProfile } {
-    const user = this.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    let user = this.users.find(u => u.email.toLowerCase() === email.toLowerCase());
     if (!user) {
-      // Automatically register for seamless testing if doesn't exist
-      return this.signUp(email, email.split('@')[0], 'mock_hash');
+      // Auto-create user for demo convenience if doesn't exist
+      user = {
+        id: `usr-${Date.now()}`,
+        email: email.toLowerCase(),
+        name: email.split('@')[0],
+        created_at: new Date().toISOString()
+      };
+      this.users.push(user);
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(this.users));
     }
 
-    this.currentUserId = user.id;
-    localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, user.id);
-
-    let profile = this.profiles.find(p => p.user_id === user.id);
+    let profile = this.profiles.find(p => p.user_id === user!.id);
     if (!profile) {
       profile = {
         ...DEFAULT_PROFILE,
@@ -218,7 +179,39 @@ class DatabaseService {
       localStorage.setItem(STORAGE_KEYS.PROFILES, JSON.stringify(this.profiles));
     }
 
+    this.currentUserId = user.id;
+    localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, this.currentUserId);
+
     return { user, profile };
+  }
+
+  signUp(email: string, name: string, passwordHash?: string): { user: User; profile: UserProfile } {
+    const existing = this.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (existing) {
+      return this.login(email);
+    }
+
+    const newUser: User = {
+      id: `usr-${Date.now()}`,
+      email: email.toLowerCase(),
+      name: name || email.split('@')[0],
+      created_at: new Date().toISOString()
+    };
+    this.users.push(newUser);
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(this.users));
+
+    const newProfile: UserProfile = {
+      ...DEFAULT_PROFILE,
+      id: `prof-${Date.now()}`,
+      user_id: newUser.id
+    };
+    this.profiles.push(newProfile);
+    localStorage.setItem(STORAGE_KEYS.PROFILES, JSON.stringify(this.profiles));
+
+    this.currentUserId = newUser.id;
+    localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, this.currentUserId);
+
+    return { user: newUser, profile: newProfile };
   }
 
   logout() {
@@ -227,36 +220,27 @@ class DatabaseService {
   }
 
   // --- Profile methods ---
-  updateProfile(profileData: Partial<UserProfile>): UserProfile {
-    if (!this.currentUserId) throw new Error('Nu există niciun utilizator autentificat.');
+  updateProfile(updated: Partial<UserProfile>): UserProfile {
+    const current = this.getCurrentProfile();
+    if (!current) throw new Error('No active user profile found');
 
-    let profileIndex = this.profiles.findIndex(p => p.user_id === this.currentUserId);
-    if (profileIndex === -1) {
-      const newProf: UserProfile = {
-        ...DEFAULT_PROFILE,
-        ...profileData,
-        id: `prof-${Date.now()}`,
-        user_id: this.currentUserId,
-        updated_at: new Date().toISOString()
-      };
-      this.profiles.push(newProf);
-      localStorage.setItem(STORAGE_KEYS.PROFILES, JSON.stringify(this.profiles));
-      return newProf;
-    }
-
-    const updated = {
-      ...this.profiles[profileIndex],
-      ...profileData,
+    const merged: UserProfile = {
+      ...current,
+      ...updated,
       updated_at: new Date().toISOString()
     };
-    this.profiles[profileIndex] = updated;
-    localStorage.setItem(STORAGE_KEYS.PROFILES, JSON.stringify(this.profiles));
-    return updated;
+
+    const index = this.profiles.findIndex(p => p.id === current.id);
+    if (index >= 0) {
+      this.profiles[index] = merged;
+      localStorage.setItem(STORAGE_KEYS.PROFILES, JSON.stringify(this.profiles));
+    }
+    return merged;
   }
 
   // --- Recipe & Ingredient methods ---
   getRecipes(): Recipe[] {
-    return [...this.recipes];
+    return this.recipes;
   }
 
   getRecipeById(id: string): Recipe | undefined {
@@ -264,15 +248,19 @@ class DatabaseService {
   }
 
   getIngredients(): Ingredient[] {
-    return [...this.ingredients];
+    return this.ingredients;
+  }
+
+  getIngredientById(id: string): Ingredient | undefined {
+    return this.ingredients.find(i => i.id === id);
   }
 
   addRecipe(recipe: Recipe) {
-    const existingIndex = this.recipes.findIndex(r => r.id === recipe.id || (r.spoonacular_id && r.spoonacular_id === recipe.spoonacular_id));
-    if (existingIndex >= 0) {
-      this.recipes[existingIndex] = recipe;
+    const existingIdx = this.recipes.findIndex(r => r.id === recipe.id || (r.spoonacular_id && r.spoonacular_id === recipe.spoonacular_id));
+    if (existingIdx >= 0) {
+      this.recipes[existingIdx] = recipe;
     } else {
-      this.recipes.push(recipe);
+      this.recipes.unshift(recipe);
     }
     localStorage.setItem(STORAGE_KEYS.RECIPES, JSON.stringify(this.recipes));
   }

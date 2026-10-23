@@ -15,9 +15,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onSuccess
 }) => {
   const [isSignUp, setIsSignUp] = useState<boolean>(false);
-  const [email, setEmail] = useState<string>('alex3.adrian@gmail.com');
-  const [password, setPassword] = useState<string>('parola123');
-  const [name, setName] = useState<string>('Alex Adrian');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [name, setName] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -47,14 +47,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     try {
       const user = await cloudAuth.signInWithGoogle();
       if (user) {
-        db.signUp(user.email || 'user@romeal.ro', user.displayName || 'Utilizator roMeal', 'cloud_google_auth');
+        db.signUp(user.email || 'user@romeal.app', user.displayName || 'roMeal Member', 'cloud_google_auth');
         onSuccess();
         onClose();
       }
     } catch (err: any) {
       console.warn('Google sign-in fallback:', err);
       if (err.code !== 'auth/popup-closed-by-user') {
-        setError(err.message || 'Eroare la autentificarea cu Google.');
+        setError(err.message || 'Error authenticating with Google.');
       }
     } finally {
       setIsLoading(false);
@@ -85,7 +85,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       onSuccess();
       onClose();
     } catch (err: any) {
-      setError(err.message || 'A apărut o problemă la autentificare.');
+      setError(err.message || 'An error occurred during authentication.');
     } finally {
       setIsLoading(false);
     }
@@ -120,17 +120,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
             <div>
               <h2 className="text-sm sm:text-base font-black font-heading text-white">
-                {isSignUp ? 'Creare Cont roMeal' : 'Autentificare roMeal Concierge'}
+                {isSignUp ? 'Create roMeal Account' : 'roMeal Concierge Sign In'}
               </h2>
               <p className="text-[11px] text-slate-400">
-                {isSignUp ? 'Salvează profilul și istoricul meselor în Cloud' : 'Sincronizare în timp real între dispozitive'}
+                {isSignUp ? 'Save your profile & meal plans to Cloud' : 'Real-time synchronization across all devices'}
               </p>
             </div>
           </div>
           <button 
             onClick={onClose}
             className="text-slate-400 hover:text-white p-2 rounded-full hover:bg-white/10 active:scale-95 transition-all"
-            aria-label="Închide"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
@@ -157,12 +157,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <path fill="#FBBC05" d="M5.28 14.32c-.25-.72-.38-1.49-.38-2.32s.13-1.6.38-2.32V6.59H1.26C.46 8.18 0 9.99 0 12s.46 3.82 1.26 5.41l4.02-3.09z" />
               <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.26 6.59l4.02 3.09c.95-2.83 3.6-4.93 6.72-4.93z" />
             </svg>
-            <span>Continuă cu Google</span>
+            <span>Continue with Google</span>
           </button>
 
           <div className="flex items-center gap-3 my-2">
             <div className="h-px bg-white/10 flex-1" />
-            <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">sau cu email</span>
+            <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">or with email</span>
             <div className="h-px bg-white/10 flex-1" />
           </div>
 
@@ -170,7 +170,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {isSignUp && (
               <div>
                 <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                  Nume complet
+                  Full Name
                 </label>
                 <div className="relative">
                   <UserIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -180,7 +180,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     value={name}
                     onChange={e => setName(e.target.value)}
                     className="w-full h-11 pl-10 pr-3.5 text-xs bg-[#141b27] border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-400 transition-all"
-                    placeholder="Alex Adrian"
+                    placeholder="John Doe"
                   />
                 </div>
               </div>
@@ -188,7 +188,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                Adresă de Email
+                Email Address
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -198,14 +198,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   className="w-full h-11 pl-10 pr-3.5 text-xs bg-[#141b27] border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-400 transition-all"
-                  placeholder="adresa@exemplu.ro"
+                  placeholder="your.email@example.com"
                 />
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                Parolă
+                Password
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -226,7 +226,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               className="w-full h-11 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 active:scale-[0.98] text-slate-950 rounded-xl text-xs font-black shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {isLoading && <Loader2 className="w-4 h-4 animate-spin text-slate-950" />}
-              <span>{isSignUp ? 'Înregistrează-te în roMeal' : 'Conectare la Cont'}</span>
+              <span>{isSignUp ? 'Sign Up for roMeal' : 'Sign In to Account'}</span>
             </button>
           </form>
 
@@ -236,7 +236,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               onClick={() => setIsSignUp(!isSignUp)}
               className="text-xs text-amber-400 hover:text-amber-300 font-bold transition-colors"
             >
-              {isSignUp ? 'Ai deja un cont? Conectează-te' : 'Nu ai cont? Înregistrează-te gratuit'}
+              {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign up for free"}
             </button>
           </div>
         </div>

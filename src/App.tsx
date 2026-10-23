@@ -43,13 +43,13 @@ export default function App() {
         if (!localUser || localUser.email !== firebaseUser.email) {
           try {
             const signupRes = db.signUp(
-              firebaseUser.email || 'user@romeal.ro',
-              firebaseUser.displayName || 'Utilizator roMeal',
+              firebaseUser.email || 'user@romeal.app',
+              firebaseUser.displayName || 'roMeal Member',
               'cloud_auth'
             );
             localUser = signupRes.user;
           } catch {
-            const loginRes = db.login(firebaseUser.email || 'user@romeal.ro');
+            const loginRes = db.login(firebaseUser.email || 'user@romeal.app');
             localUser = loginRes.user;
           }
           if (localUser) {
@@ -71,7 +71,7 @@ export default function App() {
             setWeeklyPlan(cloudPlan);
           }
         } catch (err) {
-          console.warn('Eroare la încărcarea datelor din Cloud Firestore:', err);
+          console.warn('Error loading data from Cloud Firestore:', err);
         }
       }
     });
@@ -114,7 +114,7 @@ export default function App() {
         planToSave = newPlan;
         setWeeklyPlan(newPlan);
       } catch (e: any) {
-        alert(`Atenție: ${e.message}`);
+        alert(`Notice: ${e.message}`);
       }
     }
 
@@ -146,7 +146,7 @@ export default function App() {
         cloudSync.saveWeeklyPlan(activeUser.id, newPlan);
       }
     } catch (e: any) {
-      alert(`Atenție: ${e.message}`);
+      alert(`Notice: ${e.message}`);
     }
   };
 
@@ -161,7 +161,7 @@ export default function App() {
         cloudSync.saveWeeklyPlan(activeUser.id, newPlan);
       }
     } catch (e: any) {
-      alert(`Eroare generare: ${e.message}`);
+      alert(`Generation error: ${e.message}`);
     }
   };
 
@@ -230,18 +230,18 @@ export default function App() {
               <span className="text-amber-400">ro</span>Meal
             </span>
             <span className="bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-[10px] font-black px-1.5 py-0.5 rounded-md tracking-wider">
-              RO
+              PRO
             </span>
           </div>
           <p className="text-xs text-slate-400 font-medium hidden sm:block">
-            Chestionar de profilare nutrițională inițială & gramaje în farfurie
+            Precision Nutrition Profiling Wizard & Dual-Weight Calibration
           </p>
           {db.hasCompletedProfiling() && (
             <button
               onClick={() => setIsProfilingOpen(false)}
               className="h-9 px-3 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-xs font-bold text-amber-300 transition-all flex items-center justify-center"
             >
-              Mergi la planul meu →
+              Go to my meal plan →
             </button>
           )}
         </header>
@@ -275,7 +275,7 @@ export default function App() {
       {/* Completion Toast Notification */}
       {justCompletedToast && (
         <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-amber-950 text-white px-4 py-3 text-center text-xs sm:text-sm font-bold shadow-lg border-b border-amber-500/30 flex items-center justify-center gap-2 animate-in slide-in-from-top duration-300">
-          <span>🎉 Felicitări! Profilul tău a fost salvat. Meniul săptămânal a fost calibrat exact pentru {currentProfile?.calorie_target} kcal/zi, magazinul {currentProfile?.preferred_store} și gramaje în farfurie!</span>
+          <span>🎉 Profile saved! Your 7-day meal plan has been calibrated for {currentProfile?.calorie_target} kcal/day, {currentProfile?.preferred_store}, and raw vs cooked plate weights!</span>
         </div>
       )}
 
@@ -333,11 +333,11 @@ export default function App() {
               referrerPolicy="no-referrer"
             />
             <p>
-              <strong className="text-white font-heading">roMeal</strong> &copy; {new Date().getFullYear()} — Planificator Inteligent de Mese & Nutriție Concierge (România).
+              <strong className="text-white font-heading">roMeal</strong> &copy; {new Date().getFullYear()} — Smart Meal Planner & Precision Nutrition Concierge.
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-4 text-slate-400">
-            <span>Calculat cu Mifflin-St Jeor</span>
+            <span>Mifflin-St Jeor Engine</span>
             <span>•</span>
             <span>GDPR Art. 9 Compliant</span>
             <span>•</span>
@@ -376,4 +376,3 @@ export default function App() {
     </div>
   );
 }
-

@@ -5,17 +5,13 @@ import {
   Flame, 
   Clock, 
   ShieldCheck, 
-  ShieldAlert, 
   ChefHat, 
   ArrowRightLeft, 
   Eye, 
-  CheckCircle2, 
-  AlertCircle, 
   Sparkles, 
   ShoppingBag,
   Scale,
   Utensils,
-  Layers,
   Info
 } from 'lucide-react';
 import { WeeklyMealPlan, UserProfile, Recipe, MealPlanEntry, Allergen } from '../types';
@@ -30,16 +26,16 @@ interface MealPlanViewProps {
   onOpenOnboarding: () => void;
 }
 
-const ALLERGEN_LABELS: Record<Allergen, string> = {
+const ALLERGEN_LABELS_EN: Record<Allergen, string> = {
   gluten: 'Gluten',
-  lactoza: 'Lactoză',
-  arahide_nuci: 'Nuci',
-  oua: 'Ouă',
-  peste_fructe_de_mare: 'Pește',
-  soia: 'Soia',
-  mustar: 'Muștar',
-  telina: 'Țelină',
-  susan: 'Susan'
+  lactoza: 'Dairy',
+  arahide_nuci: 'Nuts/Peanuts',
+  oua: 'Eggs',
+  peste_fructe_de_mare: 'Fish/Seafood',
+  soia: 'Soy',
+  mustar: 'Mustard',
+  telina: 'Celery',
+  susan: 'Sesame'
 };
 
 export const MealPlanView: React.FC<MealPlanViewProps> = ({
@@ -59,16 +55,16 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
           <Calendar className="w-8 h-8" />
         </div>
         <h2 className="text-2xl font-black font-heading text-white mb-2">
-          Niciun plan alimentar generat încă
+          No meal plan generated yet
         </h2>
         <p className="text-sm text-slate-400 max-w-md mx-auto mb-6">
-          Configurează profilul tău cu țintele calorice, alergiile și bugetul în RON pentru a genera un meniu personalizat pentru întreaga săptămână.
+          Set up your biometric profile, calorie targets, allergies, and weekly grocery budget to generate your personalized 7-day plan.
         </p>
         <button
           onClick={onOpenOnboarding}
           className="px-6 py-3 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-sm rounded-xl shadow-lg shadow-amber-500/25 transition-all"
         >
-          Configurează Profilul & Generează
+          Set Up Profile & Generate
         </button>
       </div>
     );
@@ -88,6 +84,8 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
     dayRawGrams += w.rawTotalGrams;
   });
 
+  const dayTitle = currentDay.day_name_en || currentDay.day_name_ro;
+
   return (
     <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-5 sm:space-y-6 overflow-x-hidden">
       {/* Top Banner: Luxury Overview & Action bar */}
@@ -96,19 +94,19 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <span className="inline-flex items-center gap-1.5 text-xs font-bold bg-amber-400/15 border border-amber-400/30 text-amber-300 px-3 py-0.5 rounded-full">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              Nutriție Personalizată & Gramaje În Farfurie
+              Precision Nutrition & Dual Plate Weights
             </span>
             <span className="text-xs text-slate-400">
-              Magazin: <strong className="text-white">{profile.preferred_store || 'Kaufland'}</strong> • Buget: <strong className="text-amber-400">{profile.weekly_budget_ron} RON</strong>
+              Store: <strong className="text-white">{profile.preferred_store || 'Market'}</strong> • Budget: <strong className="text-amber-400">{profile.weekly_budget_ron} RON / $</strong>
             </span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-black text-white font-heading tracking-tight">
-            Meniul tău săptămânal calibrat
+            Your Calibrated 7-Day Meal Plan
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-            Fiecare rețetă afișează <strong className="text-amber-300">greutatea crudă</strong> (la cântar când prepari) și <strong className="text-emerald-300">greutatea gătită</strong> (cât pui pe farfurie când mănânci), adaptată pentru {profile.household_size} {profile.household_size === 1 ? 'persoană' : 'persoane'}.
+            Every recipe calculates <strong className="text-amber-300">raw scale weight</strong> (kitchen scale before cooking) and <strong className="text-emerald-300">cooked plate weight</strong> (served on your plate after water loss/gain), scaled for {profile.household_size} {profile.household_size === 1 ? 'person' : 'people'}.
           </p>
         </div>
 
@@ -116,10 +114,10 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
           <button
             onClick={onOpenOnboarding}
             className="flex-1 sm:flex-initial h-11 flex items-center justify-center gap-2 px-4 bg-gradient-to-r from-amber-500/15 to-emerald-500/15 hover:from-amber-500/25 hover:to-emerald-500/25 active:scale-[0.98] text-amber-300 border border-amber-400/30 rounded-xl text-xs font-bold transition-all shadow-sm"
-            title="Refă chestionarul de profilare"
+            title="Nutrition wizard and biometric goals"
           >
             <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
-            <span className="whitespace-nowrap">Chestionar Profil</span>
+            <span className="whitespace-nowrap">Nutrition Wizard</span>
           </button>
 
           <button
@@ -127,7 +125,7 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
             className="flex-1 sm:flex-initial h-11 flex items-center justify-center gap-2 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-[0.98] text-white rounded-xl text-xs font-extrabold transition-all shadow-md shadow-emerald-900/40 border border-emerald-400/30"
           >
             <RotateCw className="w-4 h-4 shrink-0" />
-            <span className="whitespace-nowrap">Regenerează Săptămâna</span>
+            <span className="whitespace-nowrap">Regenerate Week</span>
           </button>
         </div>
       </div>
@@ -137,6 +135,7 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
         {plan.days.map((day, idx) => {
           const isSelected = selectedDayIndex === idx;
           const dayCalRatio = Math.round((day.total_calories / targetCalories) * 100);
+          const dayLabel = day.day_name_en || day.day_name_ro;
 
           return (
             <button
@@ -149,7 +148,7 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
               }`}
             >
               <p className={`text-[11px] font-extrabold uppercase tracking-wider ${isSelected ? 'text-amber-300' : 'text-slate-400'}`}>
-                {day.day_name_ro}
+                {dayLabel}
               </p>
               <p className={`text-base font-black my-0.5 ${isSelected ? 'text-white' : 'text-slate-200'}`}>
                 {day.total_calories} <span className="text-[10px] font-normal text-slate-400">kcal</span>
@@ -171,12 +170,12 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-amber-400 font-extrabold text-sm sm:text-base font-heading">
-                Bilanț nutrițional: {currentDay.day_name_ro}
+                Nutritional Balance: {dayTitle}
               </span>
               <span className="text-slate-400 text-xs">({currentDay.date_label})</span>
             </div>
             <p className="text-xs text-slate-300 mt-0.5">
-              Consum total: <strong className="text-white">{currentDay.total_calories} kcal</strong> din ținta de <strong className="text-amber-300">{targetCalories} kcal</strong> ({calorieDiff >= 0 ? `+${calorieDiff}` : calorieDiff} kcal diferență)
+              Planned Total: <strong className="text-white">{currentDay.total_calories} kcal</strong> / <strong className="text-amber-300">{targetCalories} kcal</strong> target ({calorieDiff >= 0 ? `+${calorieDiff}` : calorieDiff} kcal difference)
             </p>
           </div>
 
@@ -184,8 +183,8 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
             {/* Day Plate Weight Summary */}
             <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 rounded-xl text-xs font-bold">
               <Utensils className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Total în farfurie azi: <strong>~{dayCookedGrams}g</strong></span>
-              <span className="text-slate-500 text-[10px]">({dayRawGrams}g crud)</span>
+              <span>Served on plate today: <strong>~{dayCookedGrams}g</strong></span>
+              <span className="text-slate-500 text-[10px]">({dayRawGrams}g raw prep)</span>
             </div>
 
             {/* Hard allergen exclusion indicator badge */}
@@ -193,8 +192,8 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
               <span>
                 {profile.allergies.length > 0 
-                  ? `Excludere: ${profile.allergies.map(a => ALLERGEN_LABELS[a] || a).join(', ')}`
-                  : 'Fără alergii'
+                  ? `Excluding: ${profile.allergies.map(a => ALLERGEN_LABELS_EN[a] || a).join(', ')}`
+                  : 'No Allergies'
                 }
               </span>
             </div>
@@ -214,27 +213,27 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
         {/* Macro split breakdown */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
           <div className="bg-[#141b27] p-3 rounded-2xl border border-white/5">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Proteine</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400 block">Protein</span>
             <p className="text-lg font-black text-blue-400">{currentDay.total_protein}g</p>
-            <span className="text-[10px] text-slate-400">Țintă: {profile.protein_target_g}g</span>
+            <span className="text-[10px] text-slate-400">Target: {profile.protein_target_g}g</span>
           </div>
 
           <div className="bg-[#141b27] p-3 rounded-2xl border border-white/5">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Carbohidrați</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400 block">Carbohydrates</span>
             <p className="text-lg font-black text-amber-400">{currentDay.total_carbs}g</p>
-            <span className="text-[10px] text-slate-400">Țintă: {profile.carbs_target_g}g</span>
+            <span className="text-[10px] text-slate-400">Target: {profile.carbs_target_g}g</span>
           </div>
 
           <div className="bg-[#141b27] p-3 rounded-2xl border border-white/5">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Grăsimi</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400 block">Healthy Fats</span>
             <p className="text-lg font-black text-rose-400">{currentDay.total_fat}g</p>
-            <span className="text-[10px] text-slate-400">Țintă: {profile.fat_target_g}g</span>
+            <span className="text-[10px] text-slate-400">Target: {profile.fat_target_g}g</span>
           </div>
 
           <div className="bg-[#141b27] p-3 rounded-2xl border border-white/5">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Calorii</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Calories</span>
             <p className="text-lg font-black text-emerald-400">{currentDay.total_calories}</p>
-            <span className="text-[10px] text-slate-400">kcal planificate</span>
+            <span className="text-[10px] text-slate-400">kcal planned</span>
           </div>
         </div>
       </div>
@@ -243,12 +242,12 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-bold text-white font-heading flex items-center gap-2">
-            <span>Mesele zilei de {currentDay.day_name_ro}</span>
-            <span className="text-xs font-normal text-slate-400">({currentDay.entries.length} mese programate)</span>
+            <span>Meals for {dayTitle}</span>
+            <span className="text-xs font-normal text-slate-400">({currentDay.entries.length} scheduled meals)</span>
           </h3>
           <span className="text-xs text-amber-400 font-medium hidden sm:inline flex items-center gap-1">
             <Info className="w-3.5 h-3.5" />
-            Cântărește crud la gătit • Pune în farfurie cantitatea gătită
+            Weigh raw when prepping • Serve cooked portion on plate
           </span>
         </div>
 
@@ -257,12 +256,14 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
             const recipe = entry.recipe;
             const totals = getRecipeTotalPlateWeight(recipe);
             const slotName = entry.meal_slot === 'breakfast' 
-              ? 'Mic Dejun' 
+              ? 'Breakfast' 
               : entry.meal_slot === 'lunch' 
-                ? 'Prânz' 
+                ? 'Lunch' 
                 : entry.meal_slot === 'dinner' 
-                  ? 'Cină' 
-                  : 'Gustare';
+                  ? 'Dinner' 
+                  : 'Snack';
+            
+            const recipeTitle = recipe.title_en || recipe.title_ro;
 
             return (
               <div
@@ -273,7 +274,7 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
                 <div className="relative h-48 w-full bg-slate-900 overflow-hidden">
                   <img
                     src={recipe.image_url}
-                    alt={recipe.title_ro}
+                    alt={recipeTitle}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0f141f] via-black/30 to-transparent" />
@@ -288,7 +289,7 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
                     <Flame className="w-4 h-4 text-amber-400" />
                     <span>{recipe.calories} kcal</span>
                     <span className="text-[10px] font-normal text-slate-300">
-                      (~{entry.target_calories} țintă)
+                      (~{entry.target_calories} target)
                     </span>
                   </div>
 
@@ -303,7 +304,7 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
                 <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                   <div className="space-y-3">
                     <h4 className="font-extrabold text-white text-base leading-snug line-clamp-2 group-hover:text-amber-300 transition-colors">
-                      {recipe.title_ro}
+                      {recipeTitle}
                     </h4>
 
                     {/* Macronutrients */}
@@ -315,7 +316,7 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
                         C: {recipe.carbs_g}g
                       </span>
                       <span className="bg-rose-950/60 text-rose-300 border border-rose-500/30 px-2.5 py-0.5 rounded-lg text-[11px]">
-                        G: {recipe.fat_g}g
+                        F: {recipe.fat_g}g
                       </span>
                     </div>
 
@@ -324,7 +325,7 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-emerald-400 font-bold flex items-center gap-1">
                           <Utensils className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>În Farfurie (Gătit):</span>
+                          <span>On Plate (Cooked):</span>
                         </span>
                         <span className="font-black text-emerald-300 bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded-md">
                           ~{totals.cookedTotalGrams} g
@@ -334,10 +335,10 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
                       <div className="flex items-center justify-between text-xs pt-1 border-t border-white/5">
                         <span className="text-slate-400 font-medium flex items-center gap-1">
                           <Scale className="w-3.5 h-3.5 text-amber-400" />
-                          <span>La Cântar (Crud):</span>
+                          <span>Scale Prep (Raw):</span>
                         </span>
                         <span className="font-bold text-amber-300/90 text-[11px]">
-                          ~{totals.rawTotalGrams} g ingrediente
+                          ~{totals.rawTotalGrams} g ingredients
                         </span>
                       </div>
                     </div>
@@ -351,17 +352,17 @@ export const MealPlanView: React.FC<MealPlanViewProps> = ({
                       className="flex-1 h-11 flex items-center justify-center gap-1.5 px-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-[0.98] text-white text-xs font-black rounded-xl transition-all shadow-md shadow-emerald-900/30 border border-emerald-400/30"
                     >
                       <Eye className="w-4 h-4 shrink-0" />
-                      <span className="whitespace-nowrap">Rețetă & Cântar</span>
+                      <span className="whitespace-nowrap">Recipe & Scale</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => onOpenSwap(entry, selectedDayIndex)}
                       className="h-11 flex items-center justify-center gap-1.5 px-3.5 bg-slate-900/90 hover:bg-slate-800 active:scale-[0.98] text-slate-300 hover:text-white border border-white/10 hover:border-amber-400/30 text-xs font-bold rounded-xl transition-all shrink-0"
-                      title="Schimbă cu altă opțiune sigură"
+                      title="Swap with another safe recipe"
                     >
                       <ArrowRightLeft className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                      <span className="whitespace-nowrap">Schimbă</span>
+                      <span className="whitespace-nowrap">Swap</span>
                     </button>
                   </div>
                 </div>

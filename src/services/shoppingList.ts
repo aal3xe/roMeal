@@ -1,13 +1,16 @@
 import { WeeklyMealPlan, AggregatedShoppingItem, Ingredient } from '../types';
 
-export const CATEGORY_LABELS_RO: Record<Ingredient['category'], { label: string; icon: string }> = {
-  legume_fructe: { label: 'Legume & Fructe Proaspete', icon: '🥕' },
-  carne_peste: { label: 'Carne, Pește & Fructe de Mare', icon: '🥩' },
-  lactate_oua: { label: 'Lactate, Brânzeturi & Ouă', icon: '🧀' },
-  panificatie_cereale: { label: 'Panificație, Cereale & Paste', icon: '🌾' },
-  bacanie_condimente: { label: 'Băcănie, Uleiuri & Condimente', icon: '🫒' },
-  altele: { label: 'Alte Produse', icon: '📦' }
+export const CATEGORY_LABELS: Record<Ingredient['category'], { label: string; icon: string }> = {
+  legume_fructe: { label: 'Fresh Produce (Fruits & Vegetables)', icon: '🥕' },
+  carne_peste: { label: 'Meat, Poultry & Seafood', icon: '🥩' },
+  lactate_oua: { label: 'Dairy, Cheeses & Eggs', icon: '🧀' },
+  panificatie_cereale: { label: 'Bakery, Grains & Pasta', icon: '🌾' },
+  bacanie_condimente: { label: 'Pantry, Oils & Seasonings', icon: '🫒' },
+  altele: { label: 'Other Essentials', icon: '📦' }
 };
+
+// Backwards compatibility alias
+export const CATEGORY_LABELS_RO = CATEGORY_LABELS;
 
 export class ShoppingListService {
   /**
@@ -19,9 +22,12 @@ export class ShoppingListService {
     const scale = Math.max(1, householdSize);
 
     for (const day of plan.days) {
+      const dayDisplayName = day.day_name_en || day.day_name_ro;
       for (const entry of day.entries) {
         const recipe = entry.recipe;
         if (!recipe || !recipe.ingredients) continue;
+
+        const recipeTitle = recipe.title_en || recipe.title_ro;
 
         for (const ri of recipe.ingredients) {
           const ing = ri.ingredient;
@@ -29,12 +35,13 @@ export class ShoppingListService {
 
           const amountForRecipe = ri.amount_grams * scale;
           const existing = itemMap.get(ing.id);
+          const ingName = ing.name_en || ing.name_ro;
 
           if (existing) {
             existing.total_grams += amountForRecipe;
             existing.recipe_appearances.push({
-              recipe_title: recipe.title_ro,
-              day_name: day.day_name_ro,
+              recipe_title: recipeTitle,
+              day_name: dayDisplayName,
               amount_grams: amountForRecipe
             });
             // Update display amount
@@ -42,14 +49,15 @@ export class ShoppingListService {
           } else {
             itemMap.set(ing.id, {
               ingredient_id: ing.id,
-              name_ro: ing.name_ro,
+              name_ro: ingName,
+              name_en: ing.name_en || ing.name_ro,
               category: ing.category,
               total_grams: amountForRecipe,
               display_amount: this.formatGramsDisplay(amountForRecipe, ing.default_unit),
               recipe_appearances: [
                 {
-                  recipe_title: recipe.title_ro,
-                  day_name: day.day_name_ro,
+                  recipe_title: recipeTitle,
+                  day_name: dayDisplayName,
                   amount_grams: amountForRecipe
                 }
               ],
@@ -69,17 +77,17 @@ export class ShoppingListService {
       if (a.category !== b.category) {
         return a.category.localeCompare(b.category);
       }
-      return a.name_ro.localeCompare(b.name_ro);
+      return (a.name_en || a.name_ro).localeCompare(b.name_en || b.name_ro);
     });
   }
 
   /**
-   * Friendly display formatting for Romanian shopper
+   * Universal display formatting for international shoppers
    */
   private formatGramsDisplay(totalGrams: number, defaultUnit: string): string {
-    if (defaultUnit === 'buc') {
-      const pieces = Math.ceil(totalGrams / 60); // approx 60g per egg/piece
-      return `${pieces} bucăți (~${Math.round(totalGrams)}g)`;
+    if (defaultUnit === 'buc' || defaultUnit === 'pcs') {
+      const pieces = Math.ceil(totalGrams / 60); // approx 60g per piece/egg
+      return `${pieces} pcs (~${Math.round(totalGrams)}g)`;
     }
     if (defaultUnit === 'ml') {
       if (totalGrams >= 1000) {

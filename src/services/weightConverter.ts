@@ -1,4 +1,4 @@
-import { Recipe, RecipeIngredient, Ingredient } from '../types';
+import { Recipe, RecipeIngredient } from '../types';
 
 export interface WeightInfo {
   rawGrams: number;
@@ -8,169 +8,192 @@ export interface WeightInfo {
 }
 
 /**
- * Calculates accurate raw (negătit) vs cooked (gătit / în farfurie) weights
+ * Calculates accurate raw (uncooked) vs cooked (on the plate) weights
  * based on culinary food science evaporation & water absorption factors.
  */
 export function getIngredientWeights(ri: RecipeIngredient): WeightInfo {
   const rawGrams = ri.amount_grams;
   const ingId = ri.ingredient_id || ri.ingredient?.id || '';
-  const name = (ri.ingredient?.name_ro || ri.unit_display || '').toLowerCase();
+  const nameRo = (ri.ingredient?.name_ro || '').toLowerCase();
+  const nameEn = (ri.ingredient?.name_en || ri.unit_display || '').toLowerCase();
+  const combinedName = `${nameRo} ${nameEn}`;
 
   // Explicit override if already defined
   if (ri.amount_grams_cooked) {
     return {
       rawGrams,
       cookedGrams: ri.amount_grams_cooked,
-      stateLabel: ri.cooked_state_label || 'gătit',
-      changeNote: rawGrams > ri.amount_grams_cooked ? 'scade prin gătire' : 'crește prin absorbție apă'
+      stateLabel: ri.cooked_state_label || 'Cooked',
+      changeNote: rawGrams > ri.amount_grams_cooked ? 'Reduces via cooking' : 'Expands via water absorption'
     };
   }
 
-  // 1. CARNE DE PUI, CURCAN, VITĂ, PORC (Pierd apă ~25%)
+  // 1. CHICKEN, TURKEY, BEEF, PORK (Moisture loss ~25%)
   if (
     ingId === 'ing-20' || ingId === 'ing-21' || ingId === 'ing-24' || 
     ingId === 'ing-26' || ingId === 'ing-60' || ingId === 'ing-66' ||
-    name.includes('pui') || name.includes('curcan') || name.includes('vită') || name.includes('porc') || name.includes('ficăței')
+    combinedName.includes('chicken') || combinedName.includes('turkey') || 
+    combinedName.includes('beef') || combinedName.includes('pork') || 
+    combinedName.includes('liver') || combinedName.includes('pui') || 
+    combinedName.includes('curcan') || combinedName.includes('vită')
   ) {
     const cookedGrams = Math.round(rawGrams * 0.75);
     return {
       rawGrams,
       cookedGrams,
-      stateLabel: 'fript / copt / fiert',
-      changeNote: 'scade cu ~25% din greutate prin evaporarea apei'
+      stateLabel: 'Grilled / Baked / Seared',
+      changeNote: 'Reduces by ~25% weight through moisture loss'
     };
   }
 
-  // 2. PEȘTE & FRUCTE DE MARE (Pierd apă ~20%)
+  // 2. FISH & SEAFOOD (Moisture loss ~20%)
   if (
     ingId === 'ing-22' || ingId === 'ing-23' || ingId === 'ing-61' ||
-    name.includes('somon') || name.includes('păstrăv') || name.includes('cod') || name.includes('pește')
+    combinedName.includes('salmon') || combinedName.includes('trout') || 
+    combinedName.includes('cod') || combinedName.includes('fish') || 
+    combinedName.includes('shrimp') || combinedName.includes('somon') || 
+    combinedName.includes('păstrăv')
   ) {
     const cookedGrams = Math.round(rawGrams * 0.80);
     return {
       rawGrams,
       cookedGrams,
-      stateLabel: 'copt la cuptor / pe grătar',
-      changeNote: 'scade cu ~20% prin rumenire'
+      stateLabel: 'Oven-baked / Pan-seared',
+      changeNote: 'Reduces by ~20% through searing & juices'
     };
   }
 
-  // 3. OREZ & QUINOA (Absorb apă: cresc de ~2.8x)
-  if (ingId === 'ing-43' || ingId === 'ing-46' || name.includes('orez') || name.includes('quinoa')) {
+  // 3. RICE & QUINOA (Absorbs water: expands ~2.8x)
+  if (
+    ingId === 'ing-43' || ingId === 'ing-46' || 
+    combinedName.includes('rice') || combinedName.includes('quinoa') || 
+    combinedName.includes('orez')
+  ) {
     const cookedGrams = Math.round(rawGrams * 2.85);
     return {
       rawGrams,
       cookedGrams,
-      stateLabel: 'fiert pufos al dente',
-      changeNote: 'crește de aproape 3x prin absorbția apei la fiert'
+      stateLabel: 'Steamed / Fluffy al dente',
+      changeNote: 'Expands nearly 3x by absorbing cooking water'
     };
   }
 
-  // 4. MĂLAI PENTRU MĂMĂLIGĂ (Crește de ~3.8x)
-  if (ingId === 'ing-42' || name.includes('mălai')) {
+  // 4. CORNMEAL / POLENTA (Expands ~3.8x)
+  if (ingId === 'ing-42' || combinedName.includes('cornmeal') || combinedName.includes('polenta') || combinedName.includes('mălai')) {
     const cookedGrams = Math.round(rawGrams * 3.8);
     return {
       rawGrams,
       cookedGrams,
-      stateLabel: 'mămăliguță fiartă caldă',
-      changeNote: 'absoarbe apa și crește de ~3.8 ori'
+      stateLabel: 'Simmered warm polenta',
+      changeNote: 'Absorbs water and increases ~3.8x'
     };
   }
 
-  // 5. PASTE INTEGRALE (Cresc de ~2.3x)
-  if (ingId === 'ing-44' || name.includes('paste') || name.includes('spaghete') || name.includes('penne')) {
+  // 5. WHOLE WHEAT PASTA (Expands ~2.3x)
+  if (
+    ingId === 'ing-44' || combinedName.includes('pasta') || 
+    combinedName.includes('spaghetti') || combinedName.includes('penne') || 
+    combinedName.includes('paste')
+  ) {
     const cookedGrams = Math.round(rawGrams * 2.3);
     return {
       rawGrams,
       cookedGrams,
-      stateLabel: 'fierte al dente',
-      changeNote: 'cresc de ~2.3 ori prin fierbere'
+      stateLabel: 'Boiled al dente',
+      changeNote: 'Expands ~2.3x through boiling'
     };
   }
 
-  // 6. LINTE & NĂUT USCAT (Crește de ~2.4x)
-  if (ingId === 'ing-51' || name.includes('linte uscată')) {
+  // 6. LENTILS & CHICKPEAS (Expands ~2.4x)
+  if (
+    ingId === 'ing-51' || combinedName.includes('lentil') || 
+    combinedName.includes('chickpea') || combinedName.includes('linte')
+  ) {
     const cookedGrams = Math.round(rawGrams * 2.4);
     return {
       rawGrams,
       cookedGrams,
-      stateLabel: 'fiert în mâncare / sos',
-      changeNote: 'crește de ~2.4 ori prin fierbere'
+      stateLabel: 'Simmered in broth/stew',
+      changeNote: 'Expands ~2.4x through hydration'
     };
   }
 
-  // 7. CIUPERCI (Pierd multă apă ~40%)
-  if (ingId === 'ing-14' || name.includes('ciuperci')) {
+  // 7. MUSHROOMS (Loses ~40% water)
+  if (ingId === 'ing-14' || combinedName.includes('mushroom') || combinedName.includes('ciuperci')) {
     const cookedGrams = Math.round(rawGrams * 0.60);
     return {
       rawGrams,
       cookedGrams,
-      stateLabel: 'sotate la tigaie',
-      changeNote: 'scad cu ~40% prin eliminarea apei'
+      stateLabel: 'Pan-sautéed',
+      changeNote: 'Reduces by ~40% as moisture evaporates'
     };
   }
 
-  // 8. SPANAC BABY (Scade dramatic ~50%)
-  if (ingId === 'ing-5' || name.includes('spanac')) {
+  // 8. BABY SPINACH (Shrinks ~50%)
+  if (ingId === 'ing-5' || combinedName.includes('spinach') || combinedName.includes('spanac')) {
     const cookedGrams = Math.round(rawGrams * 0.50);
     return {
       rawGrams,
       cookedGrams,
-      stateLabel: 'înăbușit / sotat',
-      changeNote: 'se restrânge cu ~50% volum și apă'
+      stateLabel: 'Wilted / Steamed',
+      changeNote: 'Reduces by ~50% in volume and water'
     };
   }
 
-  // 9. CARTOFI (Pierdere ușoară ~5-10% la copt/fiert)
-  if (ingId === 'ing-13' || name.includes('cartofi')) {
+  // 9. POTATOES (Minor ~8% loss)
+  if (ingId === 'ing-13' || combinedName.includes('potato') || combinedName.includes('cartofi')) {
     const cookedGrams = Math.round(rawGrams * 0.92);
     return {
       rawGrams,
       cookedGrams,
-      stateLabel: 'copți / fierți piure',
-      changeNote: 'pierdere minoră de apă'
+      stateLabel: 'Roasted / Boiled mash',
+      changeNote: 'Minor moisture evaporation'
     };
   }
 
-  // 10. MAZĂRE, BROCCOLI (La abur / opărite)
-  if (ingId === 'ing-8' || ingId === 'ing-62' || name.includes('broccoli') || name.includes('mazăre')) {
+  // 10. PEAS & BROCCOLI (Steamed / blanched)
+  if (
+    ingId === 'ing-8' || ingId === 'ing-62' || 
+    combinedName.includes('broccoli') || combinedName.includes('pea') || 
+    combinedName.includes('mazăre')
+  ) {
     const cookedGrams = Math.round(rawGrams * 0.95);
     return {
       rawGrams,
       cookedGrams,
-      stateLabel: 'opărit / la abur',
-      changeNote: 'greutate stabilă'
+      stateLabel: 'Steamed tender-crisp',
+      changeNote: 'Stable weight'
     };
   }
 
-  // 11. OUĂ (Pierd ~8% coajă/evaporare la gătit)
-  if (ingId === 'ing-25' || name.includes('ouă') || name.includes('ou')) {
+  // 11. EGGS (Loss ~10% shell/cooking)
+  if (ingId === 'ing-25' || combinedName.includes('egg') || combinedName.includes('ouă') || combinedName.includes('ou')) {
     const cookedGrams = Math.round(rawGrams * 0.90);
     return {
       rawGrams,
       cookedGrams,
-      stateLabel: 'ochi / omletă / fiert',
-      changeNote: 'fără coajă, gătit'
+      stateLabel: 'Poached / Scrambled / Boiled',
+      changeNote: 'Shelled & cooked'
     };
   }
 
-  // 12. TOFU (Scade ușor la rumenit ~15%)
-  if (ingId === 'ing-56' || name.includes('tofu')) {
+  // 12. TOFU (Loss ~15%)
+  if (ingId === 'ing-56' || combinedName.includes('tofu')) {
     const cookedGrams = Math.round(rawGrams * 0.85);
     return {
       rawGrams,
       cookedGrams,
-      stateLabel: 'rumenit la tigaie',
-      changeNote: 'crustă rumenă crocantă'
+      stateLabel: 'Pan-crisped golden',
+      changeNote: 'Crisped outer crust'
     };
   }
 
-  // 13. ALIMENTE CONSUMATE PROASPETE / CRUDE (roșii, castraveți, telemea, iaurt, avocado, nuci, pâine)
+  // 13. FRESH / RAW CONSUMED ITEMS (tomatoes, cucumbers, cheeses, yogurt, avocado, nuts, bread)
   return {
     rawGrams,
     cookedGrams: rawGrams,
-    stateLabel: 'crud proaspăt / porționat',
-    changeNote: 'nu necesită gătire termică'
+    stateLabel: 'Fresh raw / Pre-portioned',
+    changeNote: 'No thermal cooking required'
   };
 }
 

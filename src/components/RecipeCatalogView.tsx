@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Flame, Clock, ShieldCheck, ShieldAlert, Eye, Plus, Sparkles, Filter, Scale, Utensils, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { Search, Flame, Clock, Eye, Sparkles, Filter, Utensils, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { Recipe, MealType, Allergen } from '../types';
 import { db } from '../services/db';
 import { getRecipeTotalPlateWeight } from '../services/weightConverter';
@@ -37,12 +37,12 @@ export const RecipeCatalogView: React.FC<RecipeCatalogViewProps> = ({
       });
 
       if (res.source === 'live_api') {
-        setFeedbackMessage(`S-au importat cu succes ${res.recipes.length} rețete din Spoonacular!`);
+        setFeedbackMessage(`Successfully imported ${res.recipes.length} recipes from Spoonacular!`);
       } else {
-        setFeedbackMessage('S-au încărcat rețetele din catalogul nutrițional.');
+        setFeedbackMessage('Loaded recipes from nutritional catalog.');
       }
     } catch {
-      setFeedbackMessage('A apărut o problemă la interogarea Spoonacular API.');
+      setFeedbackMessage('Could not reach Spoonacular API.');
     } finally {
       setIsFetchingSpoonacular(false);
       setTimeout(() => setFeedbackMessage(null), 4000);
@@ -54,7 +54,10 @@ export const RecipeCatalogView: React.FC<RecipeCatalogViewProps> = ({
     if (searchTerm) {
       const q = searchTerm.toLowerCase();
       const matchTitle = r.title_ro.toLowerCase().includes(q) || r.title_en.toLowerCase().includes(q);
-      const matchIng = r.ingredients.some(i => i.ingredient?.name_ro.toLowerCase().includes(q));
+      const matchIng = r.ingredients.some(i => 
+        (i.ingredient?.name_ro || '').toLowerCase().includes(q) || 
+        (i.ingredient?.name_en || '').toLowerCase().includes(q)
+      );
       if (!matchTitle && !matchIng) return false;
     }
 
@@ -79,14 +82,14 @@ export const RecipeCatalogView: React.FC<RecipeCatalogViewProps> = ({
           <div className="flex items-center gap-2 mb-2">
             <span className="inline-flex items-center gap-1.5 text-xs font-black bg-amber-400/15 border border-amber-400/30 text-amber-300 px-3 py-0.5 rounded-full">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              Nutriție per 100g & Gramaje în Farfurie
+              Nutrition per 100g & Plate Portions
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-white font-heading">
-            Catalog Rețete & Valori Nutriționale
+            Recipe Catalog & Nutritional Values
           </h1>
           <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
-            Explorează rețetele cu greutate brută (crudă la cumpărare & gătit) și greutate finală pusă în farfurie.
+            Explore recipes calibrated with exact raw scale weight (pre-cooking) and final cooked weight on your plate.
           </p>
         </div>
 
@@ -98,7 +101,7 @@ export const RecipeCatalogView: React.FC<RecipeCatalogViewProps> = ({
               className="flex items-center justify-center gap-2 h-11 px-4 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 rounded-xl text-xs font-black transition-all active:scale-[0.98] disabled:opacity-50 shadow-sm"
             >
               <RefreshCw className={`w-4 h-4 text-emerald-400 ${isFetchingSpoonacular ? 'animate-spin' : ''}`} />
-              <span>{isFetchingSpoonacular ? 'Se descarcă din Spoonacular...' : 'Descarcă Rețete Spoonacular'}</span>
+              <span>{isFetchingSpoonacular ? 'Downloading Spoonacular...' : 'Fetch Spoonacular Recipes'}</span>
             </button>
           ) : null}
 
@@ -108,7 +111,7 @@ export const RecipeCatalogView: React.FC<RecipeCatalogViewProps> = ({
           >
             <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
             <span className="whitespace-nowrap">
-              {hasApiKey ? 'Setări API (Conectat ✓)' : 'Configurare API Spoonacular'}
+              {hasApiKey ? 'API Settings (Connected ✓)' : 'Configure Spoonacular API'}
             </span>
           </button>
         </div>
@@ -129,7 +132,7 @@ export const RecipeCatalogView: React.FC<RecipeCatalogViewProps> = ({
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Caută pui, somon, ovăz..."
+            placeholder="Search chicken, salmon, oats..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             className="w-full h-11 pl-10 pr-3 text-xs bg-[#141b27] border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
@@ -140,14 +143,14 @@ export const RecipeCatalogView: React.FC<RecipeCatalogViewProps> = ({
         <div className="flex flex-wrap items-center gap-1.5 w-full lg:w-auto">
           <span className="text-xs font-bold text-slate-400 flex items-center gap-1 mr-1">
             <Filter className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-            Masa:
+            Meal:
           </span>
           {[
-            { id: 'all', label: 'Toate' },
-            { id: 'breakfast', label: 'Mic Dejun' },
-            { id: 'lunch', label: 'Prânz' },
-            { id: 'dinner', label: 'Cină' },
-            { id: 'snack', label: 'Gustare' }
+            { id: 'all', label: 'All' },
+            { id: 'breakfast', label: 'Breakfast' },
+            { id: 'lunch', label: 'Lunch' },
+            { id: 'dinner', label: 'Dinner' },
+            { id: 'snack', label: 'Snack' }
           ].map(tab => (
             <button
               key={tab.id}
@@ -170,12 +173,12 @@ export const RecipeCatalogView: React.FC<RecipeCatalogViewProps> = ({
             onChange={e => setSelectedAllergenFree(e.target.value)}
             className="w-full lg:w-auto h-11 px-3.5 text-xs bg-[#141b27] border border-white/10 rounded-xl font-bold text-slate-200 focus:outline-hidden focus:border-amber-400 transition-all cursor-pointer"
           >
-            <option value="all">Toți Alergenii Permiși</option>
-            <option value="gluten">Fără Gluten</option>
-            <option value="lactoza">Fără Lactoză</option>
-            <option value="oua">Fără Ouă</option>
-            <option value="peste_fructe_de_mare">Fără Pește / Fructe de mare</option>
-            <option value="arahide_nuci">Fără Nuci / Arahide</option>
+            <option value="all">All Dietary Options</option>
+            <option value="gluten">Gluten-Free</option>
+            <option value="lactoza">Dairy-Free</option>
+            <option value="oua">Egg-Free</option>
+            <option value="peste_fructe_de_mare">Fish & Seafood Free</option>
+            <option value="arahide_nuci">Nut & Peanut Free</option>
           </select>
         </div>
       </div>
@@ -184,6 +187,7 @@ export const RecipeCatalogView: React.FC<RecipeCatalogViewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {filtered.map(recipe => {
           const totals = getRecipeTotalPlateWeight(recipe);
+          const title = recipe.title_en || recipe.title_ro;
 
           return (
             <div
@@ -194,7 +198,7 @@ export const RecipeCatalogView: React.FC<RecipeCatalogViewProps> = ({
               <div className="relative h-44 w-full bg-slate-900 overflow-hidden">
                 <img
                   src={recipe.image_url}
-                  alt={recipe.title_ro}
+                  alt={title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0f141f] via-black/30 to-transparent" />
@@ -214,29 +218,29 @@ export const RecipeCatalogView: React.FC<RecipeCatalogViewProps> = ({
               <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                 <div className="space-y-2">
                   <h3 className="font-extrabold text-white text-sm leading-snug line-clamp-2 group-hover:text-amber-300 transition-colors">
-                    {recipe.title_ro}
+                    {title}
                   </h3>
 
                   <div className="flex items-center gap-1.5 text-[11px] font-bold">
                     <span className="bg-blue-950/60 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-md">P: {recipe.protein_g}g</span>
                     <span className="bg-amber-950/60 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md">C: {recipe.carbs_g}g</span>
-                    <span className="bg-rose-950/60 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded-md">G: {recipe.fat_g}g</span>
+                    <span className="bg-rose-950/60 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded-md">F: {recipe.fat_g}g</span>
                   </div>
 
                   {/* Dual Weight Badge */}
                   <div className="p-2 bg-black/40 rounded-xl border border-white/5 flex items-center justify-between text-[11px]">
                     <span className="text-emerald-400 font-bold flex items-center gap-1">
                       <Utensils className="w-3 h-3 text-emerald-400" />
-                      <span>Farfurie: ~{totals.cookedTotalGrams}g</span>
+                      <span>Plate: ~{totals.cookedTotalGrams}g</span>
                     </span>
                     <span className="text-slate-400 text-[10px]">
-                      (Crud: {totals.rawTotalGrams}g)
+                      (Raw: {totals.rawTotalGrams}g)
                     </span>
                   </div>
                 </div>
 
                 <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs text-amber-400 font-bold group-hover:text-amber-300">
-                  <span>Vezi grame & preparare</span>
+                  <span>View recipe & prep details</span>
                   <Eye className="w-4 h-4" />
                 </div>
               </div>

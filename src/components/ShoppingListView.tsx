@@ -4,18 +4,15 @@ import {
   Check, 
   Copy, 
   Printer, 
-  Users, 
   Store, 
   Wallet, 
   ChevronDown, 
   ChevronUp, 
   Sparkles, 
-  Info,
-  Scale,
-  Utensils
+  Scale
 } from 'lucide-react';
 import { WeeklyMealPlan, UserProfile, AggregatedShoppingItem } from '../types';
-import { shoppingListService, CATEGORY_LABELS_RO } from '../services/shoppingList';
+import { shoppingListService, CATEGORY_LABELS } from '../services/shoppingList';
 
 interface ShoppingListViewProps {
   plan: WeeklyMealPlan | null;
@@ -44,7 +41,7 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
     try {
       localStorage.setItem('romeal_checked_shopping_items', JSON.stringify(Array.from(checkedIds)));
     } catch (e) {
-      console.warn('Eroare salvare status cumparaturi:', e);
+      console.warn('Error saving shopping check status:', e);
     }
   }, [checkedIds]);
 
@@ -55,16 +52,16 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
           <ShoppingCart className="w-8 h-8" />
         </div>
         <h2 className="text-2xl font-black font-heading text-white mb-2">
-          Nicio listă de cumpărături generată
+          No shopping list generated
         </h2>
         <p className="text-sm text-slate-400 max-w-md mx-auto mb-6">
-          Generează un plan săptămânal pentru a calcula automat totalul de ingrediente în grame și kilograme.
+          Generate a weekly meal plan to automatically calculate raw ingredient quantities in grams and kilograms.
         </p>
         <button
           onClick={onOpenOnboarding}
           className="px-6 py-3 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-sm rounded-xl shadow-lg shadow-amber-500/25 transition-all"
         >
-          Configurează Meniul
+          Configure Meal Plan
         </button>
       </div>
     );
@@ -92,17 +89,18 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
   };
 
   const handleCopy = () => {
-    let text = `🛒 LISTĂ DE CUMPĂRĂTURI SĂPTĂMÂNALĂ - roMeal (România)\n`;
-    text += `Magazin: ${profile.preferred_store || 'Kaufland'} | Porții: ${profile.household_size} persoane\n`;
-    text += `Buget alocat: ${profile.weekly_budget_ron} RON\n`;
-    text += `* Notă: Cantitățile sunt în stare brută / crudă (pentru achiziție la cântar / ambalaj)\n\n`;
+    let text = `🛒 WEEKLY GROCERY SHOPPING LIST - roMeal\n`;
+    text += `Store: ${profile.preferred_store || 'Market'} | Servings: ${profile.household_size} ${profile.household_size === 1 ? 'person' : 'people'}\n`;
+    text += `Target Budget: ${profile.weekly_budget_ron} RON / $\n`;
+    text += `* Note: Quantities are in raw uncooked state for scale weight / packages\n\n`;
 
     Object.entries(grouped).forEach(([catKey, catItems]) => {
-      const catMeta = CATEGORY_LABELS_RO[catKey as keyof typeof CATEGORY_LABELS_RO] || { label: catKey, icon: '•' };
+      const catMeta = CATEGORY_LABELS[catKey as keyof typeof CATEGORY_LABELS] || { label: catKey, icon: '•' };
       text += `${catMeta.icon} ${catMeta.label.toUpperCase()}:\n`;
       catItems.forEach(item => {
         const isChecked = checkedIds.has(item.ingredient_id) ? '[X]' : '[ ]';
-        text += `  ${isChecked} ${item.name_ro}: ${item.display_amount}\n`;
+        const name = item.name_en || item.name_ro;
+        text += `  ${isChecked} ${name}: ${item.display_amount}\n`;
       });
       text += `\n`;
     });
@@ -118,7 +116,6 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
 
   const totalIngredientsCount = items.length;
   const completedCount = checkedIds.size;
-  const progressPercent = totalIngredientsCount > 0 ? Math.round((completedCount / totalIngredientsCount) * 100) : 0;
 
   return (
     <div className="w-full max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-5 sm:space-y-6 overflow-x-hidden">
@@ -128,17 +125,17 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <span className="inline-flex items-center gap-1.5 text-xs font-black bg-amber-400/15 border border-amber-400/30 text-amber-300 px-3 py-0.5 rounded-full">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              Sinteză agregată pe 7 zile
+              7-Day Aggregated Summary
             </span>
             <span className="text-xs text-slate-400">
-              Scalat pentru {profile.household_size} {profile.household_size === 1 ? 'persoană' : 'persoane'}
+              Scaled for {profile.household_size} {profile.household_size === 1 ? 'person' : 'people'}
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-white font-heading">
-            Lista ta de cumpărături
+            Your Grocery Shopping List
           </h1>
           <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
-            Toate ingredientele cumulate din rețetele selectate, exprimate în grame și kilograme pentru cumpărături eficiente în supermarket.
+            All ingredients accumulated across your scheduled meals in grams and packages for efficient supermarket shopping.
           </p>
         </div>
 
@@ -149,7 +146,7 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
             className="flex-1 sm:flex-initial h-11 flex items-center justify-center gap-2 px-4 bg-gradient-to-r from-amber-500/15 to-emerald-500/15 hover:from-amber-500/25 hover:to-emerald-500/25 active:scale-[0.98] text-amber-300 rounded-xl text-xs font-extrabold border border-amber-400/30 transition-all shadow-sm"
           >
             {copied ? <Check className="w-4 h-4 text-emerald-400 shrink-0" /> : <Copy className="w-4 h-4 shrink-0 text-amber-400" />}
-            <span className="whitespace-nowrap">{copied ? 'Copiat în clipboard!' : 'Copiază lista'}</span>
+            <span className="whitespace-nowrap">{copied ? 'Copied to clipboard!' : 'Copy List'}</span>
           </button>
 
           <button
@@ -157,22 +154,22 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
             className="flex-1 sm:flex-initial h-11 flex items-center justify-center gap-2 px-4 border border-white/10 hover:bg-slate-800 active:scale-[0.98] text-slate-300 rounded-xl text-xs font-bold transition-colors shrink-0"
           >
             <Printer className="w-4 h-4 shrink-0" />
-            <span className="whitespace-nowrap">Printează</span>
+            <span className="whitespace-nowrap">Print</span>
           </button>
         </div>
       </div>
 
-      {/* CÂNTĂRIRE INFO BANNER: RAW GROCERY WEIGHTS EXPLAINED */}
+      {/* SCALE INFO BANNER: RAW GROCERY WEIGHTS EXPLAINED */}
       <div className="p-4 bg-[#101622] border border-amber-500/25 rounded-2xl flex items-start gap-3 shadow-md">
         <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30 mt-0.5">
           <Scale className="w-4 h-4 text-amber-400" />
         </div>
         <div className="text-xs text-slate-300 leading-relaxed">
           <h4 className="font-extrabold text-white text-sm mb-0.5">
-            Important la cumpărături: Greutăți în stare brută (crudă / negătită)
+            Smart Shopping Tip: Uncooked (raw) scale weights
           </h4>
           <p>
-            Toate gramajele din lista de mai jos sunt cantitățile pe care le cumperi de pe raftul sau cântarul magazinului <strong>{profile.preferred_store || 'Kaufland'}</strong>. Prin preparare termică (fript, fiert, copt), mâncarea își modifică volumul (carnea pierde ~25% apă, iar orezul și pastele absorb apă și cresc de ~2.8 ori). În secțiunea <strong>Planificator Mese</strong> vei vedea exact cât să pui pe farfurie la fiecare masă!
+            All weights in this list reflect the raw quantities to purchase at <strong>{profile.preferred_store || 'the store'}</strong>. During thermal cooking, foods change weight (meats reduce ~25% through evaporation, while rice & pasta absorb water expanding ~2.8x). Inside the <strong>Meals tab</strong>, you will see the exact cooked plate weight to serve!
           </p>
         </div>
       </div>
@@ -181,16 +178,16 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-[#10151f] p-4 rounded-2xl border border-white/10 shadow-md flex items-center justify-between">
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400">Progres cumpărături</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400">Shopping Progress</span>
             <p className="text-lg font-black text-white">
-              {completedCount} / {totalIngredientsCount} <span className="text-xs font-normal text-slate-400">articole</span>
+              {completedCount} / {totalIngredientsCount} <span className="text-xs font-normal text-slate-400">items</span>
             </p>
           </div>
           <button
             onClick={checkAll}
             className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 text-xs font-black text-amber-400 hover:text-amber-300 transition-all"
           >
-            {checkedIds.size === items.length ? 'Debifează tot' : 'Bifează tot'}
+            {checkedIds.size === items.length ? 'Uncheck All' : 'Check All'}
           </button>
         </div>
 
@@ -199,8 +196,8 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
             <Store className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400">Supermarket țintă</span>
-            <p className="text-sm font-black text-white">{profile.preferred_store || 'Kaufland România'}</p>
+            <span className="text-[10px] uppercase font-bold text-slate-400">Target Supermarket</span>
+            <p className="text-sm font-black text-white">{profile.preferred_store || 'Supermarket'}</p>
           </div>
         </div>
 
@@ -209,9 +206,9 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
             <Wallet className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400">Buget săptămânal alocat</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400">Weekly Budget Target</span>
             <p className="text-sm font-black text-amber-400">
-              {profile.weekly_budget_ron} <span className="text-xs font-bold text-slate-400">RON / săptămână</span>
+              {profile.weekly_budget_ron} <span className="text-xs font-bold text-slate-400">RON / $ per week</span>
             </p>
           </div>
         </div>
@@ -220,8 +217,8 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
       {/* Grouped Shopping List */}
       <div className="space-y-5">
         {Object.entries(grouped).map(([categoryKey, categoryItems]) => {
-          const catMeta = CATEGORY_LABELS_RO[categoryKey as keyof typeof CATEGORY_LABELS_RO] || {
-            label: 'Altele',
+          const catMeta = CATEGORY_LABELS[categoryKey as keyof typeof CATEGORY_LABELS] || {
+            label: 'Other Essentials',
             icon: '📦'
           };
 
@@ -239,7 +236,7 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
                   </h3>
                 </div>
                 <span className="text-xs text-amber-400 font-bold bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-md">
-                  {categoryItems.length} {categoryItems.length === 1 ? 'ingredient' : 'ingrediente'}
+                  {categoryItems.length} {categoryItems.length === 1 ? 'item' : 'items'}
                 </span>
               </div>
 
@@ -248,6 +245,7 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
                 {categoryItems.map(item => {
                   const isChecked = checkedIds.has(item.ingredient_id);
                   const isExpanded = expandedId === item.ingredient_id;
+                  const displayName = item.name_en || item.name_ro;
 
                   return (
                     <div key={item.ingredient_id} className={`transition-colors ${isChecked ? 'bg-black/30' : 'hover:bg-white/5'}`}>
@@ -267,11 +265,11 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
 
                           <div>
                             <span className={`text-sm font-bold transition-all ${isChecked ? 'line-through text-slate-500' : 'text-slate-100'}`}>
-                              {item.name_ro}
+                              {displayName}
                             </span>
                             <div className="flex items-center gap-2 mt-0.5">
                               <span className="text-[11px] text-slate-400">
-                                Apare în {item.recipe_appearances.length} {item.recipe_appearances.length === 1 ? 'rețetă' : 'rețete'}
+                                Used in {item.recipe_appearances.length} {item.recipe_appearances.length === 1 ? 'meal' : 'meals'}
                               </span>
                             </div>
                           </div>
@@ -286,7 +284,7 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
                             type="button"
                             onClick={() => setExpandedId(isExpanded ? null : item.ingredient_id)}
                             className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
-                            title="Vezi rețetele în care este folosit"
+                            title="View recipe appearances"
                           >
                             {isExpanded ? <ChevronUp className="w-4 h-4 text-amber-400" /> : <ChevronDown className="w-4 h-4" />}
                           </button>
@@ -297,12 +295,12 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
                       {isExpanded && (
                         <div className="px-12 pb-3.5 pt-1 text-xs text-slate-300 bg-black/40 border-t border-white/5 space-y-1">
                           <p className="font-extrabold text-amber-400 text-[11px] uppercase tracking-wider">
-                            Necesar pentru prepararea:
+                            Scheduled in recipes:
                           </p>
                           <ul className="list-disc pl-4 space-y-1">
                             {item.recipe_appearances.map((app, idx) => (
                               <li key={idx} className="text-slate-300">
-                                <strong className="text-white">{app.recipe_title}</strong> ({app.day_name}) — <span className="text-amber-300 font-bold">{Math.round(app.amount_grams)}g crud</span>
+                                <strong className="text-white">{app.recipe_title}</strong> ({app.day_name}) — <span className="text-amber-300 font-bold">{Math.round(app.amount_grams)}g raw</span>
                               </li>
                             ))}
                           </ul>
